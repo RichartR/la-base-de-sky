@@ -66,7 +66,7 @@ class Game_Map
     return false
   end
 
-  # Garantiza que el jugador siempre pueda transitar por los tiles del puente
+  # Garantiza que cualquier personaje (jugador, eventos, seguidores) pueda transitar por los tiles del puente
   alias curved_bridge_playerPassable? playerPassable? unless method_defined?(:curved_bridge_playerPassable?)
   def playerPassable?(x, y, dir, self_event = nil)
     ret = curved_bridge_playerPassable?(x, y, dir, self_event)
@@ -76,16 +76,29 @@ class Game_Map
     end
     return false
   end
+
+  alias curved_bridge_passable? passable? unless method_defined?(:curved_bridge_passable?)
+  def passable?(x, y, dir, self_event = nil)
+    ret = curved_bridge_passable?(x, y, dir, self_event)
+    return ret if ret
+    if CurvedBridgeConfig::ENSURE_BRIDGE_PASSABLE && curved_bridge_tile?(x, y)
+      return true
+    end
+    return false
+  end
 end
 
 #-------------------------------------------------------------------------------
-# Extensiones en Game_Player para aplicar el desplazamiento visual
+# Extensiones en Game_Character para aplicar el desplazamiento visual a todos
+# los personajes (Jugador, Eventos, NPCs y Pokémon seguidores)
 #-------------------------------------------------------------------------------
-class Game_Player < Game_Character
+class Game_Character
   attr_accessor :curved_bridge_offset_y
 
   def curved_bridge_offset_y
-    @curved_bridge_offset_y ||= 0.0
+    if @curved_bridge_offset_y.nil?
+      reset_curved_bridge_offset
+    end
     return @curved_bridge_offset_y
   end
 
@@ -107,7 +120,7 @@ class Game_Player < Game_Character
     return base_offset + curved_bridge_offset_y.round
   end
 
-  # Reseteo al cambiar de mapa, teletransportar o reposicionar al jugador
+  # Reseteo al cambiar de mapa, teletransportar o reposicionar al personaje
   alias curved_bridge_moveto moveto unless method_defined?(:curved_bridge_moveto)
   def moveto(x, y, *args)
     curved_bridge_moveto(x, y, *args)
@@ -123,7 +136,7 @@ class Game_Player < Game_Character
 
   private
 
-  # Calcula la transición suave del offset según el estado del jugador
+  # Calcula la transición suave del offset según el estado del personaje
   def update_curved_bridge_movement_offset
     @curved_bridge_offset_y ||= 0.0
     return if !self.map
@@ -172,9 +185,18 @@ end
 if defined?(EventHandlers)
   EventHandlers.add(:on_enter_map, :curved_bridges_enter_map, proc {
     $game_player&.reset_curved_bridge_offset
+    $game_map&.events&.each_value { |e| e.reset_curved_bridge_offset }
+    if $game_temp&.respond_to?(:followers) && $game_temp.followers
+      $game_temp.followers.each_follower { |event, _follower| event&.reset_curved_bridge_offset }
+    end
   })
 
   EventHandlers.add(:on_game_load, :curved_bridges_game_load, proc {
     $game_player&.reset_curved_bridge_offset
+    $game_map&.events&.each_value { |e| e.reset_curved_bridge_offset }
+    if $game_temp&.respond_to?(:followers) && $game_temp.followers
+      $game_temp.followers.each_follower { |event, _follower| event&.reset_curved_bridge_offset }
+    end
   })
 end
+
