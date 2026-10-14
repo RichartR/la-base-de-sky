@@ -1,0 +1,6 @@
+Name         = Elite Battle UI
+Version      = 1.0.0
+Essentials   = 21.1
+Credits      = Maryn, Luka S.j., Maruno
+Requires     = [DBK] Animated Pokémon System
+Requires     = [DBK] Enhanced Battle UI

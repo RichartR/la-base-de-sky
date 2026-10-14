@@ -1,0 +1,41 @@
+﻿# Consulta la documentación en la wiki para aprender cómo editar este archivo.
+#-------------------------------
+# Pueblo Inicio (2) - Ruta 1 (5)
+2,North,0,5,South,4
+# Pueblo Inicio (2) - Afueras Zona Safari (66)
+2,West,0,66,East,0
+# Ruta 8 (69) - Pueblo Inicio (2)
+69,North,12,2,South,0
+# Ruta 6 (44) - Ruta 1 (5)
+44,South,43,5,North,0
+# Afueras Zona Safari (66) - Ruta 1 (5)
+66,North,18,5,South,0
+# Ciudad Lugano (7) - Ruta 1 (5)
+7,South,0,5,North,2
+# Ciudad Lugano (7) - Ruta 6 (44)
+7,West,5,44,East,0
+# Ciudad Lugano (7) - Pueblo Macabeo (23)
+7,East,0,23,West,78
+# Ruta 7 (47) - Ciudad Lugano (7)
+47,West,0,7,East,0
+# Ruta 2 (21) - Ciudad Lugano (7)
+21,South,0,7,North,21
+# Ruta 2 (21) - Pueblo Macabeo (23)
+21,East,0,23,West,1
+# Ruta 2 (21) - Ruta 7 (47)
+21,East,77,47,West,0
+# Ruta 3 (31) - Pueblo Macabeo (23)
+31,South,32,23,North,0
+# Ruta 3 (31) - Meseta Añil exterior (35)
+31,West,0,35,East,10
+# Meseta Añil exterior (35) - Ruta 4 (39)
+35,West,11,39,East,0
+# Ruta 5 (41) - Ruta 4 Carril Bici (40)
+41,North,0,40,South,0
+# Ruta 5 (41) - Ruta 6 Carril Bici (45)
+41,South,6,45,North,0
+# Ruta 7 (47) - Frente de Batalla (52)
+47,East,8,52,West,0
+# Ruta 8 (69) - Afueras Zona Safari (66)
+69,North,0,66,South,10
+
