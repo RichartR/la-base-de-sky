@@ -1,0 +1,34 @@
+[
+  {
+    "id": 18,
+    "name": "Puente Curvo (-12px)"
+  },
+  {
+    "id": 19,
+    "name": "Puente Curvo (-24px)"
+  },
+  {
+    "id": 20,
+    "name": "Puente Curvo (-32px)"
+  },
+  {
+    "id": 21,
+    "name": "Rampa Vert (Peldaño 1)"
+  },
+  {
+    "id": 22,
+    "name": "Rampa Vert (Peldaño 2)"
+  },
+  {
+    "id": 23,
+    "name": "Rampa Vert (Cima)"
+  },
+  {
+    "id": 24,
+    "name": "Rampa Diag Izq"
+  },
+  {
+    "id": 25,
+    "name": "Rampa Diag Der"
+  }
+]

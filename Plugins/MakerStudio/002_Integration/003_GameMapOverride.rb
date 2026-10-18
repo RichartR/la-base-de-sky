@@ -6,7 +6,7 @@
 #
 # Now also checks native layer properties for extra autotiles and cross-tileset
 # tiles. Scan order is top-down: extended layers, then native layers [2,1,0].
-# Ordinary passage bits accumulate across every applicable tile.
+# A priority-0 tile settles passability after its passage check.
 #
 # Cross-tileset tiles: use that tileset's passages/priorities/terrain_tags.
 # Extra autotiles: use per-tile passage/priority/terrain_tag from tile_data,
@@ -199,7 +199,7 @@ class Game_Map
         next if terrain&.ignore_passability
         passage = tile_data["passage"] ? tile_data["passage"].to_i : (ts.passages[tile_id] || 0)
         return false if passage & bit != 0 || passage & 0x0f == 0x0f
-        return true if (tile_data["priority"] ? tile_data["priority"].to_i : (ts.priorities[tile_id] || 0)) == 0
+        return true if resolve_tile_priority(tile_id, tile_data, ts.priorities) == 0
         next
       end
       # Default: map's passage data
@@ -207,7 +207,7 @@ class Game_Map
       next if terrain&.ignore_passability
       passage = tile_data["passage"] ? tile_data["passage"].to_i : (@passages[tile_id] || 0)
       return false if passage & bit != 0 || passage & 0x0f == 0x0f
-      return true if (tile_data["priority"] ? tile_data["priority"].to_i : (@priorities[tile_id] || 0)) == 0
+      return true if resolve_tile_priority(tile_id, tile_data, @priorities) == 0
     end
     # Fallback: native layers with per-layer tileset awareness
     return native_layer_passable(x, y, dir, self_event)
@@ -292,7 +292,7 @@ class Game_Map
         end
         passage = tile_data["passage"] ? tile_data["passage"].to_i : (ts.passages[tile_id] || 0)
         return false if passage & bit != 0 || passage & 0x0f == 0x0f
-        return true if (tile_data["priority"] ? tile_data["priority"].to_i : (ts.priorities[tile_id] || 0)) == 0
+        return true if resolve_tile_priority(tile_id, tile_data, ts.priorities) == 0
         next
       end
       terrain = GameData::TerrainTag.try_get(@terrain_tags[tile_id])
@@ -312,7 +312,7 @@ class Game_Map
       end
       passage = tile_data["passage"] ? tile_data["passage"].to_i : (@passages[tile_id] || 0)
       return false if passage & bit != 0 || passage & 0x0f == 0x0f
-      return true if (tile_data["priority"] ? tile_data["priority"].to_i : (@priorities[tile_id] || 0)) == 0
+      return true if resolve_tile_priority(tile_id, tile_data, @priorities) == 0
     end
     # Fallback: native layers with terrain checks + per-layer tileset awareness
     return native_layer_player_passable(x, y, dir)
@@ -345,13 +345,13 @@ class Game_Map
         next if terrain&.ignore_passability
         passage = tile_data["passage"] ? tile_data["passage"].to_i : (ts.passages[tile_id] || 0)
         return false if passage & 0x0f != 0
-        return true if (tile_data["priority"] ? tile_data["priority"].to_i : (ts.priorities[tile_id] || 0)) == 0
+        return true if resolve_tile_priority(tile_id, tile_data, ts.priorities) == 0
         next
       end
       next if GameData::TerrainTag.try_get(@terrain_tags[tile_id]).ignore_passability
       passage = tile_data["passage"] ? tile_data["passage"].to_i : (@passages[tile_id] || 0)
       return false if passage & 0x0f != 0
-      return true if (tile_data["priority"] ? tile_data["priority"].to_i : (@priorities[tile_id] || 0)) == 0
+      return true if resolve_tile_priority(tile_id, tile_data, @priorities) == 0
     end
     # Fallback: native layers with per-layer tileset awareness
     return native_layer_passable_strict(x, y, self_event)
@@ -690,10 +690,9 @@ class Game_Map
       end
       next if tid == 0
       passage = resolve_tile_passage(tid, td, @passages)
-      priority = resolve_tile_priority(tid, td, @priorities)
       return false if passage & bit != 0
       return false if passage & 0x0f == 0x0f
-      return true if priority == 0
+      return true if resolve_tile_priority(tid, td, @priorities) == 0
     end
     return true
   end
@@ -807,9 +806,8 @@ class Game_Map
       end
       next if tid == 0
       passage = resolve_tile_passage(tid, td, @passages)
-      priority = resolve_tile_priority(tid, td, @priorities)
       return false if passage & 0x0f != 0
-      return true if priority == 0
+      return true if resolve_tile_priority(tid, td, @priorities) == 0
     end
     return true
   end
@@ -890,7 +888,7 @@ class Debug_Passability
         end
         passage = tile_data["passage"] ? tile_data["passage"].to_i : (ts.passages[tile_id] || 0)
         return false if passage & bit != 0 || passage & 0x0f == 0x0f
-        return true if (tile_data["priority"] ? tile_data["priority"].to_i : (ts.priorities[tile_id] || 0)) == 0
+        return true if $game_map.send(:resolve_tile_priority, tile_id, tile_data, ts.priorities) == 0
         next
       end
       terrain = GameData::TerrainTag.try_get($game_map.terrain_tags[tile_id])
@@ -911,7 +909,7 @@ class Debug_Passability
       passage = tile_data["passage"] ? tile_data["passage"].to_i : ($game_map.passages[tile_id] || 0)
       next if passage.nil?
       return false if passage & bit != 0 || passage & 0x0f == 0x0f
-      return true if (tile_data["priority"] ? tile_data["priority"].to_i : ($game_map.priorities[tile_id] || 0)) == 0
+      return true if $game_map.send(:resolve_tile_priority, tile_id, tile_data, $game_map.priorities) == 0
     end
     # Fallback: native layers with terrain checks + per-layer tileset awareness
     return $game_map.send(:native_layer_player_passable, x, y, d)
