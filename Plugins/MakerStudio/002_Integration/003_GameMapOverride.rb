@@ -5,10 +5,8 @@
 # and iterates all cached maps' extended data.
 #
 # Now also checks native layer properties for extra autotiles and cross-tileset
-# tiles. Scan order is strictly top-down: extended layers (top id first) →
-# native layers [2,1,0], where each native layer resolves its extra-autotile /
-# cross-tileset / plain tile INLINE (native_layer_* helpers) — a ground tile
-# only decides the cell for everything BELOW its own layer.
+# tiles. Scan order is top-down: extended layers, then native layers [2,1,0].
+# Ordinary passage bits accumulate across every applicable tile.
 #
 # Cross-tileset tiles: use that tileset's passages/priorities/terrain_tags.
 # Extra autotiles: use per-tile passage/priority/terrain_tag from tile_data,
@@ -39,6 +37,17 @@ class Game_Map
     # Fallback: check if this autotile appears in any tileset
     auto_name = tile_data["autotile_name"]
     return nil unless auto_name
+    if tile_data["tileset_id"]
+      source_id = tile_data["tileset_id"].to_i
+      entry = MakerStudio::DataStore.get_expanded_autotile(auto_name, source_id)
+      return [entry["passage"].to_i, entry["priority"].to_i, entry["terrain_tag"].to_i] if entry
+      ts = $data_tilesets[source_id]
+      return nil unless ts && ts.autotile_names
+      idx = ts.autotile_names.index(auto_name)
+      return nil unless idx
+      base = (idx + 1) * 48
+      return [ts.passages[base] || 0, ts.priorities[base] || 0, ts.terrain_tags[base] || 0]
+    end
     # Check expanded_autotiles config first
     entry = MakerStudio::DataStore.get_expanded_autotile(auto_name)
     if entry
@@ -664,6 +673,7 @@ class Game_Map
     [2, 1, 0].each do |layer|
       tid = @map.data[x, y, layer]
       next if tid.nil?   # tid is nil for out-of-bounds (x,y) — e.g. Debug Passability scans border tiles
+      tid = MakerStudio.original_native_tile_id(@map_id, x, y, layer, tid) if MakerStudio.respond_to?(:original_native_tile_id)
       td = native_props ? (native_props[layer] || {})[key] : nil
       # Extra autotile stored as tile_id=0 — resolve inline at ITS layer so a
       # ground extra autotile can't short-circuit tiles on higher layers.
@@ -702,6 +712,7 @@ class Game_Map
     [2, 1, 0].each do |layer|
       tid = @map.data[x, y, layer]
       next if tid.nil?   # tid is nil for out-of-bounds (x,y) — e.g. Debug Passability scans border tiles
+      tid = MakerStudio.original_native_tile_id(@map_id, x, y, layer, tid) if MakerStudio.respond_to?(:original_native_tile_id)
       td = native_props ? (native_props[layer] || {})[key] : nil
       # Extra autotile stored as tile_id=0 — resolve inline at ITS layer so a
       # ground extra autotile can't short-circuit tiles on higher layers.
@@ -779,6 +790,7 @@ class Game_Map
     [2, 1, 0].each do |layer|
       tid = @map.data[x, y, layer]
       next if tid.nil?   # tid is nil for out-of-bounds (x,y) — e.g. Debug Passability scans border tiles
+      tid = MakerStudio.original_native_tile_id(@map_id, x, y, layer, tid) if MakerStudio.respond_to?(:original_native_tile_id)
       td = native_props ? (native_props[layer] || {})[key] : nil
       # Extra autotile stored as tile_id=0 — resolve inline at ITS layer so a
       # ground extra autotile can't short-circuit tiles on higher layers.
