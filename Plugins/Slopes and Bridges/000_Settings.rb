@@ -32,13 +32,16 @@ module SlopesAndBridgesConfig
     20 => -32
   }
 
-  # 3. Inclinación y relieve del sprite en peldaños de rampa (en píxeles):
-  # Permite sentir el relieve de cada peldaño de forma fluida
-  # para que el paso a la meseta superior sea 100% continuo y sin saltos ni desalineación.
+  # 3. Offset fijo del sprite en peldaños de rampa (en píxeles):
+  # Las escaleras verticales ocupan las filas de la pared del acantilado: esas
+  # filas YA son la altura. Subirlas con offset 0 deja al pj exactamente en la
+  # explanada. Cualquier offset distinto de 0 hace que suba "dos veces" y luego
+  # tenga que bajar al llegar arriba (o quede desalineado con lo de la explanada).
+  # Para dar sensación de peldaño usa RAMP_STEP_BOB (abajo).
   RAMP_SPRITE_OFFSETS = {
-    21 => -4,   # Peldaño 1 (-4 px)
-    22 => -8,   # Peldaño 2 (-8 px)
-    23 => -12,   # Peldaño 3 / Cima (-6 px)
+    21 => 0,     # Peldaño 1
+    22 => 0,     # Peldaño 2
+    23 => 0,     # Peldaño 3 / Cima
     24 => -6,   # Rampa diagonal izquierda (-6 px)
     25 => -6    # Rampa diagonal derecha (-6 px)
   }
@@ -50,7 +53,15 @@ module SlopesAndBridgesConfig
   DIAGONAL_RIGHT_TAGS = [25]
 
   # 5. Modo de interpolación durante el paso del personaje:
-  INTERPOLATION_MODE = :smooth
+  # - :smooth -> easing coseno (bueno para el arco de los puentes)
+  # - :linear -> velocidad constante dentro del paso (sin botes en cada tile)
+  INTERPOLATION_MODE      = :smooth   # Puentes
+  RAMP_INTERPOLATION_MODE = :linear   # Rampas
+
+  # Rebote por peldaño en rampas verticales (px). El sprite sube y vuelve a 0
+  # dentro de cada paso, así que nunca hay salto al entrar o salir de la rampa.
+  # 0 = desactivado.
+  RAMP_STEP_BOB = 5
 
   # 6. Garantizar pasabilidad a pie sobre puentes y rampas
   ENSURE_PASSABLE = true

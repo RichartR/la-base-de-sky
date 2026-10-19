@@ -161,21 +161,32 @@ class Game_Character
 
     if moving? && @move_time && @move_time > 0 && @move_timer
       raw_t = [[@move_timer.to_f / @move_time, 0.0].max, 1.0].min
-      t = if SlopesAndBridgesConfig::INTERPOLATION_MODE == :smooth
-            (1.0 - Math.cos(raw_t * Math::PI)) / 2.0
-          else
-            raw_t
-          end
 
       from_x = @move_initial_x || @x
       from_y = @move_initial_y || @y
       to_x   = @x
       to_y   = @y
 
+      on_ramp = self.map.ramp_tile?(from_x, from_y) || self.map.ramp_tile?(to_x, to_y)
+      mode = if on_ramp && defined?(SlopesAndBridgesConfig::RAMP_INTERPOLATION_MODE)
+               SlopesAndBridgesConfig::RAMP_INTERPOLATION_MODE
+             else
+               SlopesAndBridgesConfig::INTERPOLATION_MODE
+             end
+      t = (mode == :smooth) ? (1.0 - Math.cos(raw_t * Math::PI)) / 2.0 : raw_t
+
       from_off = self.map.slope_bridge_offset(from_x, from_y).to_f
       to_off   = self.map.slope_bridge_offset(to_x, to_y).to_f
 
       @slopes_and_bridges_offset_y = from_off + (to_off - from_off) * t
+
+      bob = defined?(SlopesAndBridgesConfig::RAMP_STEP_BOB) ? SlopesAndBridgesConfig::RAMP_STEP_BOB.to_f : 0.0
+      if bob != 0 && from_x == to_x && from_y != to_y
+        vertical_ramp = [[from_x, from_y], [to_x, to_y]].any? do |tx, ty|
+          self.map.ramp_tile?(tx, ty) && !self.map.diagonal_left?(tx, ty) && !self.map.diagonal_right?(tx, ty)
+        end
+        @slopes_and_bridges_offset_y -= bob * Math.sin(raw_t * Math::PI) if vertical_ramp
+      end
 
     elsif jumping? && @jump_time && @jump_time > 0 && @jump_timer
       raw_t = [[@jump_fraction || 0.0, 0.0].max, 1.0].min

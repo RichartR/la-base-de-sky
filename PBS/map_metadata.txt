@@ -409,3 +409,7 @@ BattleBack = city
 [077]   # Pueblo Rocedal
 Name = Pueblo Rocedal
 SnapEdges = true
+#-------------------------------
+[078]   # Casa de Handsome
+Name = Casa de Handsome
+StillReflections = true
