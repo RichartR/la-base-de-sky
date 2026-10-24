@@ -1,22 +1,22 @@
 {
   "version": 1,
   "gameRoot": "C:\\Users\\rubio\\Desktop\\LA BASE DE SKY",
-  "activeMinutes": 1782,
-  "tilesPlaced": 715123,
-  "undoCount": 721,
-  "redoCount": 27,
+  "activeMinutes": 2003,
+  "tilesPlaced": 846078,
+  "undoCount": 770,
+  "redoCount": 28,
   "mapsCreated": 7,
-  "mapsSaved": 737,
+  "mapsSaved": 799,
   "mapEdits": {
     "1": 2,
     "32": 683,
-    "48": 403247,
-    "77": 307812,
+    "48": 477385,
+    "77": 364629,
     "78": 900,
     "79": 2479
   },
-  "sessionCount": 50,
+  "sessionCount": 60,
   "firstOpened": "2026-09-29T13:46:27.513Z",
-  "lastSaved": "2026-10-19T17:40:00.574Z",
+  "lastSaved": "2026-10-24T12:26:12.783Z",
   "custom": {}
 }
